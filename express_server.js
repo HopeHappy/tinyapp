@@ -46,10 +46,13 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-// POST /urls
+// POST /urls - redirect
 app.post('/urls', (req, res) => {
-  console.log(req.body);
-  res.send('Ok');
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString(6);
+  urlDatabase[shortURL] = longURL;
+
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // GET /urls/new - render 
