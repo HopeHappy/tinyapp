@@ -22,13 +22,18 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// GET /urls
+// GET /urls - render
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
 
-// GET /urls/:shortURL
+// GET /urls/new - render 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+// GET /urls/:shortURL - render
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
