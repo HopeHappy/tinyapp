@@ -12,6 +12,22 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Function to generate a n-digit random shortURL
+const generateRandomString = function(n) {
+  const char = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const length = char.length;
+
+  let result = '';
+  let i = 1;
+  while (i <= n) {
+    const randomIndex = Math.floor(Math.random() * length);
+    result += char[randomIndex];
+    i++;
+  }
+
+  return result;
+};
+
 app.get("/", (req, res) => {
   res.send('Hello');
 });
