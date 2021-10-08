@@ -43,10 +43,11 @@ app.get("/hello", (req, res) => {
 // GET /urls - render
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
+
   res.render('urls_index', templateVars);
 });
 
-// POST /urls - redirect
+// POST /urls - redirect to /urls/:shortURL
 app.post('/urls', (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString(6);
@@ -65,7 +66,20 @@ app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   const templateVars = { shortURL, longURL };
+
   res.render('urls_show', templateVars);
+});
+
+// GET /u/:shortURL - redirect to longURL
+app.get('/u/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  // If the shortURL doesn't exist in database 
+  if (!longURL) {
+    return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
+  }
+
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
