@@ -32,14 +32,6 @@ app.get("/", (req, res) => {
   res.send('Hello');
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 // GET /urls - render
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
@@ -49,8 +41,9 @@ app.get('/urls', (req, res) => {
 
 // POST /urls - redirect to /urls/:shortURL
 app.post('/urls', (req, res) => {
-  const longURL = req.body.longURL;
   const shortURL = generateRandomString(6);
+  // If the longURL does not begin with http:, add it at the beginning
+  const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
   urlDatabase[shortURL] = longURL;
 
   res.redirect(`/urls/${shortURL}`);
@@ -70,6 +63,24 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+// POST /urls/:shortURL - redirect to /urls/:shortURL
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  // If the longURL does not begin with http:, add it at the beginning
+  const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
+  urlDatabase[shortURL] = longURL;
+  
+  res.redirect(`/urls/${shortURL}`);
+});
+
+// POST /urls/:shortURL/delete - redirect to /urls
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+
+  res.redirect('/urls');
+});
+
 // GET /u/:shortURL - redirect to longURL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
@@ -78,15 +89,8 @@ app.get('/u/:shortURL', (req, res) => {
   if (!longURL) {
     return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
   }
-
+  
   res.redirect(longURL);
-});
-
-// POST /urls/:shortURL/delete - redirect to /urls
-app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
