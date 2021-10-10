@@ -11,11 +11,11 @@
       </div>
     </div>
     <div style="text-align: right;">
-      <% if (username) { %>
+      <% if (user) { %>
         <div style="margin: 10px">
           <form class="form-inline" action="/logout" method="POST">
             <div class="form-group">
-              <label style="margin: 0 10px;">Logged In As: <%= username %></label>
+              <label style="margin: 0 10px;">Logged In As: <%= user.email %></label>
               <button type="submit" class="btn btn-outline-dark">Logout</button>
             </div>
           </form>
