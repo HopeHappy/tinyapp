@@ -17,18 +17,18 @@ const urlDatabase = {
 };
 
 // Object to store email and password
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
 // Function to generate a n-digit random shortURL
 const generateRandomString = function(n) {
@@ -44,6 +44,14 @@ const generateRandomString = function(n) {
   }
 
   return result;
+};
+
+// Function to find user from users object by email
+const findUserByEmail = function(email) {
+  for (let userId in users) {
+    if (users[userId].email === email) return users[userId];
+  }
+  return undefined;
 };
 
 app.get("/", (req, res) => {
@@ -69,7 +77,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// GET /urls/new - render 
+// GET /urls/new - render
 app.get('/urls/new', (req, res) => {
   const user_id = req.cookies.user_id;
   const user = users[user_id];
@@ -111,7 +119,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
-  // If the shortURL doesn't exist in database 
+  // If the shortURL doesn't exist in database
   if (!longURL) {
     return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
   }
@@ -135,7 +143,7 @@ app.post('/logout', (req, res) => {
 app.get('/register', (req, res) => {
   const user_id = req.cookies.user_id;
   const user = users[user_id];
-  const templateVars = { user };
+  const templateVars = { user, error: null };
 
   res.render('urls_registration', templateVars);
 });
@@ -145,7 +153,19 @@ app.post('/register', (req, res) => {
   const id = generateRandomString(4);
   const email = req.body.email;
   const password = req.body.password;
-  users[id] = { id, email, password};
+  
+  // If either of email and password is empty
+  if (!email || !password) {
+    const templateVars = {  user: null, error: 'Cannot enter an empty email or password!'};
+    return res.status(400).render('urls_registration', templateVars);
+  }
+  // If the entered email has already existed
+  if (findUserByEmail(email)) {
+    const templateVars = {  user: null, error: 'Email has been registered!'};
+    return res.status(400).render('urls_registration', templateVars);
+  }
+
+  users[id] = { id, email, password };
 
   res.cookie('user_id', id);
 

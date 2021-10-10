@@ -11,6 +11,11 @@
   <div>
     <div class="card-header"></div>
     <div style="padding-top: 20px; padding-left: 10px;">
+      <% if (error) { %>
+        <div style="color: red; font-size: 20px">
+          <p><%= error %></p>
+        </div>
+      <% } %>
       <h3 style="margin-bottom: 15px;">Create Account</h3>
       <form style="display: flex; flex-direction: column; align-items: flex-start;" action="/register" method="POST">
         <div class="form-group mb-2">
