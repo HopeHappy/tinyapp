@@ -21,12 +21,11 @@
           </form>
         </div>
       <% } else { %>
-        <form class="form-inline" action="/login" method="POST">
-          <div>
-            <input class="form-control" type="text" name="username" placeholder="Username" style="width: 300px; margin: 10px">
-            <button type="submit" class="btn btn-primary">Login</button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/register">Register here</a>
+            <a class="nav-item nav-link" href="/login">Login here</a>
           </div>
-        </form>
       <% } %>
     </div>
   </nav>
