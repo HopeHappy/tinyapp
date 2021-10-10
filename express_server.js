@@ -12,8 +12,8 @@ app.use(cookieParser());
 
 // Object to store URLs
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 // Object to store email and password
@@ -72,14 +72,21 @@ app.post('/urls', (req, res) => {
   const shortURL = generateRandomString(6);
   // If the longURL does not begin with http:, add it at the beginning
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
-  urlDatabase[shortURL] = longURL;
-
+  const userID = req.cookies.user_id;
+  urlDatabase[shortURL] = { longURL, userID };
+  
   res.redirect(`/urls/${shortURL}`);
 });
 
 // GET /urls/new - render
 app.get('/urls/new', (req, res) => {
   const user_id = req.cookies.user_id;
+
+  // If user access to /urls/new without login
+  if (!user_id) {
+    return res.redirect('/login');
+  }
+
   const user = users[user_id];
   const templateVars = { user };
 
@@ -89,7 +96,7 @@ app.get('/urls/new', (req, res) => {
 // GET /urls/:shortURL - render
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   const user_id = req.cookies.user_id;
   const user = users[user_id];
   const templateVars = { shortURL, longURL, user };
@@ -102,7 +109,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   // If the longURL does not begin with http:, add it at the beginning
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   
   res.redirect(`/urls/${shortURL}`);
 });
@@ -118,7 +125,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // GET /u/:shortURL - redirect to longURL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   // If the shortURL doesn't exist in database
   if (!longURL) {
     return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
