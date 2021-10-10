@@ -129,7 +129,39 @@ app.get('/u/:shortURL', (req, res) => {
 
 // POST /login - redirect to /urls
 app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  // If either of email and password is empty
+  if (!email || !password) {
+    const templateVars = {  user: null, error: 'Cannot enter an empty email or password!'};
+    return res.status(400).render('urls_login', templateVars);
+  }
+
+  const user = findUserByEmail(email);
+
+  // If the email does not exist
+  if (!user) {
+    const templateVars = { user: null, error: 'Email is not registered!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+  // If password is not correct
+  if (user.password !== password) {
+    const templateVars = { user: null, error: 'Incorrect password!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+
+  res.cookie('user_id', user.id);
+
   res.redirect('/urls');
+});
+
+// GET /login - render
+app.get('/login', (req, res) => {
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  const templateVars = { user, error: null };
+
+  res.render('urls_login', templateVars);
 });
 
 // POST /logout - clear the cookie - redirect to /urls
@@ -151,8 +183,7 @@ app.get('/register', (req, res) => {
 // POST /register - set the cookie - add users object - redirect
 app.post('/register', (req, res) => {
   const id = generateRandomString(4);
-  const email = req.body.email;
-  const password = req.body.password;
+  const { email, password } = req.body;
   
   // If either of email and password is empty
   if (!email || !password) {
@@ -170,15 +201,6 @@ app.post('/register', (req, res) => {
   res.cookie('user_id', id);
 
   res.redirect('/urls');
-});
-
-// GET /login - render
-app.get('/login', (req, res) => {
-  const user_id = req.cookies.user_id;
-  const user = users[user_id];
-  const templateVars = { user, error: null };
-
-  res.render('urls_login', templateVars);
 });
 
 app.listen(PORT, () => {
