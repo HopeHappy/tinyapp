@@ -172,6 +172,15 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
+// GET /login - render
+app.get('/login', (req, res) => {
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  const templateVars = { user, error: null };
+
+  res.render('urls_login', templateVars);
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
