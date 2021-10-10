@@ -11,6 +11,11 @@
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
+    <% if (error) { %>
+      <div style="color: red; font-size: 20px">
+        <p><%= error %></p>
+      </div>
+    <% } %>
     <h3>My URLs</h3>
     <table class="table">
       <thead>

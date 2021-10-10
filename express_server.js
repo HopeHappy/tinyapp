@@ -9,6 +9,7 @@ const PORT = 8080;
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+app.use(express.static('public'));
 
 // Object to store URLs
 const urlDatabase = {
@@ -67,8 +68,13 @@ const urlsForUser = function(id) {
   return urlDatabaseForSpecificUser;
 };
 
-app.get("/", (req, res) => {
-  res.send('Hello');
+// GET /home - render
+app.get("/home", (req, res) => {
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  const templateVars = { user };
+
+  res.render('urls_home', templateVars);
 });
 
 // GET /urls - render
@@ -81,8 +87,9 @@ app.get('/urls', (req, res) => {
     return res.status(403).render('urls_login', templateVars);
   }
 
+  const urlDatabase = urlsForUser(user_id);
   const user = users[user_id];
-  const templateVars = { user, urls: urlDatabase };
+  const templateVars = { user, urls: urlDatabase, error: null };
 
   res.render('urls_index', templateVars);
 });
@@ -120,6 +127,20 @@ app.get('/urls/:shortURL', (req, res) => {
   const longURL = urlDatabase[shortURL].longURL;
   const user_id = req.cookies.user_id;
   const user = users[user_id];
+
+  // If user access to /urls/new without login
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+  // If user_id does not match the userID of URL
+  if (urlDatabase[shortURL].userID !== user_id) {
+    const urlDatabase = urlsForUser(user_id);
+    const templateVars = { user, urls: urlDatabase, error: `You cannot access to this shortURL ${shortURL}!` };
+    return res.status(403).render('urls_index', templateVars);
+  }
+
+  
   const templateVars = { shortURL, longURL, user };
 
   res.render('urls_show', templateVars);
@@ -130,15 +151,25 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   // If the longURL does not begin with http:, add it at the beginning
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
-  urlDatabase[shortURL].longURL = longURL;
+  const user_id = req.cookies.user_id;
   
+  // Can edit the shortURL only under the correct(creator's) cookie
+  if (urlDatabase[shortURL].userID === user_id) {
+    urlDatabase[shortURL].longURL = longURL;
+  }
+
   res.redirect(`/urls/${shortURL}`);
 });
 
 // POST /urls/:shortURL/delete - redirect to /urls
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  const user_id = req.cookies.user_id;
+
+  // Can delete the shortURL only under the correct(creator's) cookie
+  if (urlDatabase[shortURL].userID === user_id) {
+    delete urlDatabase[shortURL];
+  }
 
   res.redirect('/urls');
 });
@@ -196,7 +227,7 @@ app.get('/login', (req, res) => {
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
 
-  res.redirect('/urls');
+  res.redirect('/home');
 });
 
 // GET /register - render
