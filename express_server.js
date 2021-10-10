@@ -61,6 +61,13 @@ app.get("/", (req, res) => {
 // GET /urls - render
 app.get('/urls', (req, res) => {
   const user_id = req.cookies.user_id;
+  
+  // If user access to /urls/new without login
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+
   const user = users[user_id];
   const templateVars = { user, urls: urlDatabase };
 
@@ -84,7 +91,8 @@ app.get('/urls/new', (req, res) => {
 
   // If user access to /urls/new without login
   if (!user_id) {
-    return res.redirect('/login');
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
   }
 
   const user = users[user_id];
