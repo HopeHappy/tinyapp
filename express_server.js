@@ -54,6 +54,19 @@ const findUserByEmail = function(email) {
   return undefined;
 };
 
+// Function to returns URLs of the specific user
+const urlsForUser = function(id) {
+  let urlDatabaseForSpecificUser = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      const key = shortURL;
+      const value = urlDatabase[shortURL];
+      urlDatabaseForSpecificUser[key] = value;
+    }
+  }
+  return urlDatabaseForSpecificUser;
+};
+
 app.get("/", (req, res) => {
   res.send('Hello');
 });
@@ -61,7 +74,7 @@ app.get("/", (req, res) => {
 // GET /urls - render
 app.get('/urls', (req, res) => {
   const user_id = req.cookies.user_id;
-  
+
   // If user access to /urls/new without login
   if (!user_id) {
     const templateVars = { user: null, error: 'Please login first!' };
