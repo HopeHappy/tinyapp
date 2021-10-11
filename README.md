@@ -4,13 +4,13 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot of home page"](#)
-!["screenshot of register page"](#)
-!["screenshot of login page"](#)
-!["screenshot of urls page"](#)
-!["screenshot of urls/:shortURL page"](#)
-!["screenshot of urls/new page"](#)
-!["screenshot of error page"](#)
+!["screenshot of home page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/home.png?raw=true)
+!["screenshot of register page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/register.png?raw=true)
+!["screenshot of login page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/login.png?raw=true)
+!["screenshot of urls page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/urls.png?raw=true)
+!["screenshot of urls/:shortURL page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/urls_shortURL.png?raw=true)
+!["screenshot of urls/new page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/urls_new.png?raw=true)
+!["screenshot of error page"](https://github.com/HopeHappy/tinyapp/blob/master/docs/error.png?raw=true)
 
 ## Functionalities
 
