@@ -10,7 +10,6 @@ const generateRandomString = function(n) {
     result += char[randomIndex];
     i++;
   }
-
   return result;
 };
 
@@ -35,4 +34,18 @@ const urlsForUser = function(id, urlDatabases) {
   return urlDatabaseForSpecificUser;
 };
 
-module.exports = { generateRandomString, getUserByEmail, urlsForUser };
+// Stretch - Analytics
+// Function to calculte the amount of unique visitor
+const uniqueVisits = function(records) {
+  let sum = 0;
+  const idCollection = [];
+  for(let record of records) {
+    if (!idCollection.includes(record.visitId)) {
+      idCollection.push(record.visitId);
+      sum++;
+    }
+  }
+  return sum;
+};
+
+module.exports = { generateRandomString, getUserByEmail, urlsForUser, uniqueVisits };

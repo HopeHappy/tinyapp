@@ -97,6 +97,11 @@ app.get('/urls/new', (req, res) => {
 });
 
 // GET /urls/:shortURL - render
+
+// Stretch - Analytics
+const visits = {};
+const { uniqueVisits } = require('./helpers');
+
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabases[shortURL].longURL;
@@ -116,8 +121,17 @@ app.get('/urls/:shortURL', (req, res) => {
     return res.status(403).render('urls_index', templateVars);
   }
 
-  
-  const templateVars = { shortURL, longURL, user };
+  // Stretch - Analytics
+  // Login page the first time
+  if (!visits[shortURL]) {
+    visits[shortURL] = [];
+  }
+
+  const records = visits[shortURL];
+  const totalVisits = records.length;
+  const totalUniqueVisits = uniqueVisits(records);
+
+  const templateVars = { shortURL, longURL, user, totalVisits, totalUniqueVisits, records };
 
   res.render('urls_show', templateVars);
 });
@@ -160,7 +174,17 @@ app.get('/u/:shortURL', (req, res) => {
   if (!longURL) {
     return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
   }
-  
+
+  // Stretch - Analytics
+  // Set cookie value as the visitID
+  let visitId = req.session.user_id;
+  // Set 'Unknown User' as the visitID when users are not logged in
+  if (!visitId) {
+    visitId = 'Unknown User';
+  }
+  const time = new Date().toUTCString();
+  visits[shortURL].push({ visitId, time });
+
   res.redirect(longURL);
 });
 

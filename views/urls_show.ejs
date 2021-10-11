@@ -15,7 +15,7 @@
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>" target="_blank"><%= shortURL %></a></p>
       </div>
       <hr style="margin: 0;" />
-      <div style="padding-top: 20px; padding-left: 10px;">
+      <div style="padding-top: 20px; padding-left: 10px; padding-right: 10px;">
         <h5 style="text-align: left;">Edit</h5>
         <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
           <div class="form-group mb-2">
@@ -24,6 +24,30 @@
             <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
+      </div>
+      <hr style="margin: 0;" />
+      <div style="padding-top: 20px; padding-left: 10px; padding-right: 10px; text-align: left;">
+        <h5 style="margin-bottom: 20px;">Visit Records</h5>
+        <p>Total Visits: <%= totalVisits %></p>
+        <p>Total Unique Visits: <%= totalUniqueVisits %></p>
+        <div style="text-align: center;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Visit ID</th>
+                <th scope="col">Visit Time</th> 
+              </tr>
+            </thead>
+            <tbody>
+              <% for(let record of records) { %>
+                <tr>
+                  <td><%= record.visitId %></td>
+                  <td><%= record.time %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
       </div>
     <div class="card-footer text-muted"></div>
   </div>
