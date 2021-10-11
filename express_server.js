@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
 
 const app = express();
 const PORT = 8080;
@@ -11,6 +12,10 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static('public'));
+app.use(cookieSession({
+  name:'session',
+  keys: 'secretKey'
+}));
 
 // Object to store URLs
 const urlDatabase = {
@@ -259,7 +264,8 @@ app.post('/register', (req, res) => {
 
   const hashedPassword = bcrypt.hashSync(password, 10);
   users[id] = { id, email, password: hashedPassword };
-  console.log(users);
+
+  const encryptedCookie = 
   res.cookie('user_id', id);
 
   res.redirect('/urls');
