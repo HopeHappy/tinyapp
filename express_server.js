@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
@@ -152,7 +153,7 @@ app.post('/urls/:shortURL', (req, res) => {
   // If the longURL does not begin with http:, add it at the beginning
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
   const user_id = req.cookies.user_id;
-  
+
   // Can edit the shortURL only under the correct(creator's) cookie
   if (urlDatabase[shortURL].userID === user_id) {
     urlDatabase[shortURL].longURL = longURL;
@@ -204,7 +205,7 @@ app.post('/login', (req, res) => {
     return res.status(403).render('urls_login', templateVars);
   }
   // If password is not correct
-  if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     const templateVars = { user: null, error: 'Incorrect password!' };
     return res.status(403).render('urls_login', templateVars);
   }
@@ -242,6 +243,7 @@ app.get('/register', (req, res) => {
 // POST /register - set the cookie - add users object - redirect
 app.post('/register', (req, res) => {
   const id = generateRandomString(4);
+
   const { email, password } = req.body;
   
   // If either of email and password is empty
@@ -255,8 +257,9 @@ app.post('/register', (req, res) => {
     return res.status(400).render('urls_registration', templateVars);
   }
 
-  users[id] = { id, email, password };
-
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  users[id] = { id, email, password: hashedPassword };
+  console.log(users);
   res.cookie('user_id', id);
 
   res.redirect('/urls');
