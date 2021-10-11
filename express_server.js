@@ -39,8 +39,23 @@ const users = {
   }
 };
 
+// GET / - redirect
+app.get('/', (req, res) => {
+  const user_id = req.session.user_id;
+
+  // If user is not logged in
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+  
+  // If user is logged in
+  res.redirect('/urls');
+});
+
+
 // GET /home - render
-app.get("/home", (req, res) => {
+app.get('/home', (req, res) => {
   const user_id = req.session.user_id;
   // const user_id = req.cookies.user_id;
   const user = users[user_id];
@@ -54,12 +69,12 @@ app.get('/urls', (req, res) => {
   const user_id = req.session.user_id;
   // const user_id = req.cookies.user_id;
 
-  // If user access to /urls/new without login
+  // If user is not login
   if (!user_id) {
     const templateVars = { user: null, error: 'Please login first!' };
     return res.status(403).render('urls_login', templateVars);
   }
-
+  // Filter the specific urlDatabase for user
   const urlDatabase = urlsForUser(user_id, urlDatabases);
   const user = users[user_id];
   const templateVars = { user, urls: urlDatabase, error: null };
@@ -72,9 +87,15 @@ app.post('/urls', (req, res) => {
   const shortURL = generateRandomString(6);
   // If the longURL does not begin with http:, add it at the beginning
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
-  const userID = req.session.user_id;
-  // const userID = req.cookies.user_id;
-  urlDatabases[shortURL] = { longURL, userID };
+  const user_id = req.session.user_id;
+  // const user_id = req.cookies.user_id;
+  // If user is not login
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
+
+  urlDatabases[shortURL] = { longURL, userID: user_id };
   
   res.redirect(`/urls/${shortURL}`);
 });
@@ -104,12 +125,18 @@ const { uniqueVisits } = require('./helpers');
 
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
+
+  // If the shortURL does not exist in the database
+  if (!urlDatabases[shortURL]) {
+    return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
+  }
+
   const longURL = urlDatabases[shortURL].longURL;
   const user_id = req.session.user_id;
   // const user_id = req.cookies.user_id;
   const user = users[user_id];
 
-  // If user access to /urls/new without login
+  // If user is not login
   if (!user_id) {
     const templateVars = { user: null, error: 'Please login first!' };
     return res.status(403).render('urls_login', templateVars);
@@ -122,7 +149,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 
   // Stretch - Analytics
-  // Login page the first time
+  // Login page in the first time
   if (!visits[shortURL]) {
     visits[shortURL] = [];
   }
@@ -143,6 +170,11 @@ app.post('/urls/:shortURL', (req, res) => {
   const longURL = req.body.longURL.substring(0, 5) === 'http:' ? req.body.longURL : `http://${req.body.longURL}`;
   const user_id = req.session.user_id;
   // const user_id = req.cookies.user_id;
+  // If user is not login
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
 
   // Can edit the shortURL only under the correct(creator's) cookie
   if (urlDatabases[shortURL].userID === user_id) {
@@ -157,6 +189,11 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   const user_id = req.session.user_id;
   // const user_id = req.cookies.user_id;
+  // If user is not login
+  if (!user_id) {
+    const templateVars = { user: null, error: 'Please login first!' };
+    return res.status(403).render('urls_login', templateVars);
+  }
 
   // Can delete the shortURL only under the correct(creator's) cookie
   if (urlDatabases[shortURL].userID === user_id) {
@@ -169,11 +206,12 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // GET /u/:shortURL - redirect to longURL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabases[shortURL].longURL;
   // If the shortURL doesn't exist in database
-  if (!longURL) {
+  if (!urlDatabases[shortURL]) {
     return res.status(404).send(`<html><body>The entered shortURL <b>${shortURL}</b> does not exist!</body></html>`);
   }
+
+  const longURL = urlDatabases[shortURL].longURL;
 
   // Stretch - Analytics
   // Set cookie value as the visitID
@@ -247,8 +285,6 @@ app.get('/register', (req, res) => {
 
 // POST /register - set the cookie - add users object - redirect
 app.post('/register', (req, res) => {
-  const id = generateRandomString(4);
-
   const { email, password } = req.body;
   
   // If either of email and password is empty
@@ -257,13 +293,15 @@ app.post('/register', (req, res) => {
     return res.status(400).render('urls_registration', templateVars);
   }
   // If the entered email has already existed
-  if (getUserByEmail(email, users)) {
+  const user = getUserByEmail(email, users);
+  if (user) {
     const templateVars = {  user: null, error: 'Email has been registered!'};
     return res.status(400).render('urls_registration', templateVars);
   }
 
   // Use bcrypt to generate hashed password
   const hashedPassword = bcrypt.hashSync(password, 10);
+  const id = generateRandomString(4);
   users[id] = { id, email, password: hashedPassword };
 
   // Use cookie-session to generate encrypted cookie
